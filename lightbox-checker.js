@@ -3,6 +3,21 @@ const puppeteer = require("puppeteer");
 const nodemailer = require("nodemailer");
 const prompt = require('prompt-sync')();
 
+
+/* 
+
+*    *    *    *    *    *
+┬    ┬    ┬    ┬    ┬    ┬
+│    │    │    │    │    │
+│    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
+│    │    │    │    └───── month (1 - 12)
+│    │    │    └────────── day of month (1 - 31)
+│    │    └─────────────── hour (0 - 23)
+│    └──────────────────── minute (0 - 59)
+└───────────────────────── second (0 - 59, OPTIONAL) 
+
+*/
+
 let dayOfWeek;
 let month;
 let dayOfMonth;
@@ -11,7 +26,6 @@ let minute;
 let date;
 let time;
 
-// Asks user for the date/time to run the test at
 function setTimer() {
   date = prompt('What date would you like the test to run? (Ex: 03/24/2023) - ')
   const day = new Date(date)
@@ -34,6 +48,9 @@ function setTimer() {
   else if (time.charAt(time.length - 2) === 'p') {
     if (time.substring(0, 2).includes(':')) {
       hour = parseInt(time.charAt(0)) + 12
+    }
+    else if (time.substring(0, 2) === '12') {
+      hour = time.substring(0, 2)
     }
     else {
       hour = parseInt(time.substring(0, 2)) + 12
@@ -63,16 +80,19 @@ const job = schedule.scheduleJob(`${minute} ${hour} ${dayOfMonth} ${month} ${day
 
 
     let lightboxImageURL;
+    const url1 = ***URL HERE***;
+    const url2 = ***URL HERE***;
 
     try {
       // Initialize Puppeteer, loads the page, and causes the lightbox to appear
       const browser = await puppeteer.launch({ headless: true });
       const context = await browser.createIncognitoBrowserContext();
       const page = await context.newPage();
-      await page.goto(*** ENTER URL HERE ***);
+      await page.goto(`${url1}`);
       await page.hover("#body")
-
-      // Gives page & lightbox some time to load
+      await page.waitForTimeout(10000);
+      await page.goto(`${url2}`);
+      await page.hover("#body")
       await page.waitForTimeout(10000);
 
       // Convert the nodelist of images returned from the dom into an array, then map each item and get the src attribute value, and store it in 'srcs' variable, which is therefore returned to be the value of 'issueSrcs' variable.
@@ -93,25 +113,26 @@ const job = schedule.scheduleJob(`${minute} ${hour} ${dayOfMonth} ${month} ${day
 
     // Send email
     var transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: 'gmail', 
       auth: {
-        user: *** ENTER EMAIL HERE ***,
-        pass: *** ENTER EMAIL PASSWORD HERE ***
+        user: ***SENDER EMAIL***,
+        pass: ***SENDER PASSWROD***
       }
     });
 
     var mailOptions = {
-      from: *** ENTER EMAIL HERE ***,
-      to: *** ENTER EMAIL HERE ***,
-      subject: *** ENTER EMAIL SUBJECT LINE HERE ***,
-      text:  *** ENTER EMAIL BODY TEXT HERE ***
+      from: ***SENDER EMAIL***,
+      to: ***RECEIPIENT EMAIL***,
+      // to: 'ashley@dig.solutions, davidb@dig.solutions, kristin@dig.solutions, jordan@dig.solutions',
+      subject: lightboxImageURL.length === 0 ? 'ATTENTION: JFJ LIGHTBOX IS DOWN!' : 'JFJ LIGHTBOX REPORT',
+      text: lightboxImageURL.length !== 0 ? `A JFJ lightbox test was ran at ${time} on ${date}. \n\nTo get to the lightbox the bot went to ${url1} and then it went to ${url2} where the lightbox appeared. \n\nThe lightbox image is currently: ${JSON.stringify(lightboxImageURL)}. \n\nEverything seems to be running smoothly but it never hurts to double check!` : `A JFJ lightbox test was ran at ${time} on ${date}. \n\nThe bot attempted to go to ${url1} and then ${url2} \n\nThe lightbox is down! Have someone fix the lightbox immediately!`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
         console.log(error);
       } else {
-        console.log('Email sent: ' + info.response);
+        console.log('Email sent!');
       }
     });
   })();
