@@ -123,7 +123,6 @@ const job = schedule.scheduleJob(`${minute} ${hour} ${dayOfMonth} ${month} ${day
     var mailOptions = {
       from: ***SENDER EMAIL***,
       to: ***RECEIPIENT EMAIL***,
-      // to: 'ashley@dig.solutions, davidb@dig.solutions, kristin@dig.solutions, jordan@dig.solutions',
       subject: lightboxImageURL.length === 0 ? 'ATTENTION: JFJ LIGHTBOX IS DOWN!' : 'JFJ LIGHTBOX REPORT',
       text: lightboxImageURL.length !== 0 ? `A JFJ lightbox test was ran at ${time} on ${date}. \n\nTo get to the lightbox the bot went to ${url1} and then it went to ${url2} where the lightbox appeared. \n\nThe lightbox image is currently: ${JSON.stringify(lightboxImageURL)}. \n\nEverything seems to be running smoothly but it never hurts to double check!` : `A JFJ lightbox test was ran at ${time} on ${date}. \n\nThe bot attempted to go to ${url1} and then ${url2} \n\nThe lightbox is down! Have someone fix the lightbox immediately!`,
     };
